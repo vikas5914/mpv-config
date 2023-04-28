@@ -13,7 +13,7 @@ if not platform then
   local o = {}
   if mp.get_property_native('options/vo-mmcss-profile', o) ~= o then
     platform = 'windows'
-  elseif mp.get_property_native('options/input-app-events', o) ~= o then
+  elseif mp.get_property_native('options/macos-force-dedicated-gpu', o) ~= o then
     platform = 'macos'
   else
     platform = 'linux'
@@ -24,12 +24,17 @@ utils = require 'mp.utils'
 
 -- TODO: macOS implementation?
 function boss_key()
+  -- log current platfrom value
+  mp.msg.info("Current platform: " .. platform)
+  mp.set_property_native("pause", true)
   if platform == 'windows' then
       mp.command([[run cmd /c echo m > \\.\pipe\mpv-boss-key-]]..utils.getpid())
   elseif platform == 'linux' then
       utils.subprocess({ args = {'xdotool', 'getactivewindow', 'windowminimize'} })
+  elseif platform == 'macos' then
+      utils.subprocess({ args = {'osascript', '-e', 'tell application "System Events" to set the visible of the first process whose frontmost is true to false'} })
   end
-  mp.set_property_native("pause", true)
+  
 end
 
 -- The only way to minimize the window in Windows is through a compiled Win32
